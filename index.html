@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WasteWise AI — Smart Waste Intelligence Platform</title>
+<style>
+  :root{
+    --bg:#050c09;
+    --bg2:#081712;
+    --glass:rgba(255,255,255,0.045);
+    --glass-strong:rgba(255,255,255,0.07);
+    --glass-border:rgba(255,255,255,0.10);
+    --accent:#3dffa8;
+    --accent-dim:#0f6b45;
+    --wet:#2fd66b;
+    --dry:#38bdf8;
+    --recycle:#fbbf24;
+    --ewaste:#f8615f;
+    --text:#eafff5;
+    --text-dim:#8fada0;
+    --text-dimmer:#5d7669;
+    --mono: 'JetBrains Mono','Fira Code',ui-monospace,'Courier New',monospace;
+    --sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --radius: 16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    background:
+      radial-gradient(ellipse 1200px 700px at 15% -10%, rgba(61,255,168,0.09), transparent 60%),
+      radial-gradient(ellipse 1000px 700px at 100% 10%, rgba(56,189,248,0.06), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+  }
+  body{
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+    padding: 22px 22px 70px;
+  }
+  .wrap{ max-width:1400px; margin:0 auto; }
+
+  /* ---------- Header ---------- */
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    padding:20px 26px;
+    border-radius:var(--radius);
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(14px);
+    margin-bottom:20px;
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-icon{
+    font-size:34px;
+    filter: drop-shadow(0 0 12px rgba(61,255,168,0.55));
+  }
+  .brand h1{
+    font-size:22px; letter-spacing:1.5px; font-weight:800;
+    background:linear-gradient(90deg,#eafff5,var(--accent));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand p{ font-family:var(--mono); font-size:11.5px; color:var(--text-dim); letter-spacing:1px; margin-top:2px;}
+  .sys-status{
+    display:flex; align-items:center; gap:9px;
+    font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    color:var(--accent); padding:9px 16px; border-radius:999px;
+    background:rgba(61,255,168,0.08); border:1px solid rgba(61,255,168,0.35);
+  }
+  .status-dot{
+    width:8px; height:8px; border-radius:50%; background:var(--accent);
+    box-shadow:0 0 10px 2px rgba(61,255,168,0.8);
+    animation:pulseDot 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseDot{ 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.45; transform:scale(0.8);} }
+
+  /* ---------- Layout ---------- */
+  .dash-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;
+  }
+  @media (max-width: 980px){ .dash-grid{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius);
+    backdrop-filter: blur(14px);
+    padding:20px;
+    box-shadow:0 20px 50px -25px rgba(0,0,0,0.6);
+  }
+  .panel + .panel{ margin-top:20px; }
+  .panel-title{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    margin-bottom:16px;
+  }
+  .panel-title h2{ font-size:16px; letter-spacing:.5px; font-weight:700; }
+  .panel-title .sub{ font-family:var(--mono); font-size:10.5px; color:var(--text-dimmer); letter-spacing:1px;}
+
+  /* ---------- Process bar ---------- */
+  .process-bar{
+    display:flex; align-items:center; gap:0; flex-wrap:wrap;
+    background:rgba(0,0,0,0.28);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:16px;
+    font-family:var(--mono);
+  }
+  .p-step{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:8px;
+    font-size:10.5px; letter-spacing:1px; color:var(--text-dimmer);
+    transition:all .35s ease;
+    white-space:nowrap;
+  }
+  .p-step .num{
+    width:16px; height:16px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; border:1px solid var(--text-dimmer); color:var(--text-dimmer);
+    transition:all .35s ease;
+  }
+  .p-step.done{ color:var(--text-dim); }
+  .p-step.done .num{ border-color:var(--accent-dim); background:var(--accent-dim); color:#e8fff5;}
+  .p-step.active{ color:var(--accent); text-shadow:0 0 10px rgba(61,255,168,0.6); }
+  .p-step.active .num{
+    border-color:var(--accent); color:#04140c; background:var(--accent);
+    box-shadow:0 0 14px 2px rgba(61,255,168,0.65);
+  }
+  .p-arrow{ color:var(--text-dimmer); font-size:11px; padding:0 2px; }
+
+  /* ---------- Bin visual ---------- */
+  .bin-stage{
+    display:grid; grid-template-columns:1.35fr 1fr; gap:16px;
+    align-items:start;
+  }
+  @media (max-width:640px){ .bin-stage{ grid-template-columns:1fr; } }
+  .svg-frame{
+    background:radial-gradient(ellipse at 50% 0%, rgba(61,255,168,0.05), transparent 60%), rgba(0,0,0,0.35);
+    border:1px solid var(--glass-border);
+    border-radius:14px;
+    overflow:hidden;
+    position:relative;
+  }
+  .svg-frame svg{ width:100%; height:auto; display:block; }
+
+  .readout{
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .card-mini{
+    background:rgba(0,0,0,0.3);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    padding:12px 14px;
+    min-height:64px;
+  }
+  .card-mini h4{
+    font-family:var(--mono); font-size:10px; letter-spacing:1.5px; color:var(--text-dimmer);
+    margin-bottom:6px; display:flex; align-items:center; gap:6px;
+  }
+  .card-mini .line1{ font-size:13.5px; font-weight:700; color:var(--text); }
+  .card-mini .line2{ font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:2px;}
+  .conf-bar-track{
+    margin-top:8px; height:6px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden;
+  }
+  .conf-bar-fill{
+    height:100%; width:0%; border-radius:99px;
+    background:linear-gradient(90deg,var(--accent-dim),var(--accent));
+    transition:width 1s cubic-bezier(.2,.8,.3,1);
+    box-shadow:0 0 8px rgba(61,255,168,0.6);
+  }
+  .idle-text{ color:var(--text-dimmer); font-family:var(--mono); font-size:11.5px; }
+
+  .levels{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .level-item{
+    background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:10px; padding:8px 10px;
+  }
+  .level-item .lbl{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:9.5px; color:var(--text-dim); letter-spacing:.5px; margin-bottom:5px;}
+  .level-track{ height:5px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .level-fill{ height:100%; border-radius:99px; transition:width .6s ease; }
+
+  /* ---------- Controls ---------- */
+  .controls{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  button{
+    font-family:var(--sans); font-weight:600; font-size:13px;
+    color:var(--text); cursor:pointer;
+    background:var(--glass-strong);
+    border:1px solid var(--glass-border);
+    border-radius:10px; padding:10px 15px;
+    transition:all .2s ease;
+    display:flex; align-items:center; gap:7px;
+  }
+  button:hover:not(:disabled){
+    border-color:rgba(61,255,168,0.5); transform:translateY(-1px);
+    box-shadow:0 8px 20px -10px rgba(61,255,168,0.4);
+  }
+  button:active:not(:disabled){ transform:translateY(0); }
+  button:disabled{ opacity:.4; cursor:not-allowed; }
+  button.reset-btn{ background:rgba(248,97,95,0.08); border-color:rgba(248,97,95,0.3); }
+  button.reset-btn:hover:not(:disabled){ border-color:rgba(248,97,95,0.6); box-shadow:0 8px 20px -10px rgba(248,97,95,0.4);}
+  button.primary-btn{
+    background:linear-gradient(90deg,var(--accent-dim),var(--accent));
+    color:#04140c; border:none; font-weight:800; letter-spacing:.5px;
+  }
+  button.primary-btn:hover:not(:disabled){ box-shadow:0 10px 26px -8px rgba(61,255,168,0.6); }
+
+  /* ---------- SVG internals ---------- */
+  .chute-glow{ filter:drop-shadow(0 0 0 rgba(0,0,0,0)); transition:filter .4s ease; }
+  .route-pipe{ transition: stroke .4s ease, filter .4s ease; }
+  .route-pipe.active{ filter:drop-shadow(0 0 10px currentColor); }
+  .route-arrow{ opacity:.55; }
+  .route-label{ font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:1px; }
+  .compartment-icon{ font-size:26px; }
+  .junction-ring{ transition: stroke .3s ease, filter .3s ease; }
+  .junction-ring.active{ filter:drop-shadow(0 0 8px var(--accent)); }
+  .deflector{
+    transform-box: view-box; transform-origin:300px 255px;
+    transform:rotate(var(--angle,0deg));
+    transition:transform .55s cubic-bezier(.34,1.4,.4,1);
+  }
+  .scan-zone-bg{ fill: rgba(61,255,168,0.03); stroke:var(--glass-border); stroke-width:1; }
+  .scan-line{
+    opacity:0; transition:opacity .3s ease;
+  }
+  .scan-line.on{
+    opacity:1; animation:scanSweep 1.1s ease-in-out infinite;
+  }
+  @keyframes scanSweep{
+    0%{ transform:translateY(0); }
+    50%{ transform:translateY(55px); }
+    100%{ transform:translateY(0); }
+  }
+  .waste-token{ opacity:0; transition:opacity .3s ease; }
+  .waste-token.show{ opacity:1; }
+  .waste-token text{ font-size:26px; text-anchor:middle; dominant-baseline:middle; }
+  .waste-token circle{ fill:rgba(0,0,0,0.35); stroke:var(--glass-border); }
+  .inlet-label{ font-family:var(--mono); font-size:10.5px; fill:var(--text-dimmer); letter-spacing:1px; }
+  .cam-label{ font-family:var(--mono); font-size:9.5px; fill:var(--text-dim); }
+  .status-flash{ font-family:var(--mono); font-size:11px; fill:var(--accent); }
+
+  /* ---------- Drone map ---------- */
+  .map-frame{
+    position:relative; width:100%; padding-top:64%;
+    background:
+      linear-gradient(rgba(56,189,248,0.05), transparent 40%),
+      radial-gradient(circle at 20% 20%, rgba(56,189,248,0.06), transparent 55%),
+      rgba(0,0,0,0.35);
+    border:1px solid var(--glass-border);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .map-inner{ position:absolute; inset:0; }
+  .road{
+    position:absolute; background:rgba(255,255,255,0.07);
+  }
+  .green-area{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle, rgba(47,214,107,0.18), transparent 70%);
+  }
+  .building{
+    position:absolute; width:15%; height:19%;
+    background:linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02));
+    border:1px solid var(--glass-border);
+    border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transform:translate(-50%,-50%);
+    font-family:var(--mono); font-size:9.5px; color:var(--text-dim); letter-spacing:1px;
+    transition:box-shadow .4s ease, border-color .4s ease;
+  }
+  .building .bicon{ font-size:15px; margin-bottom:2px; }
+  .building.hotspot-hit{
+    border-color:rgba(248,97,95,0.7);
+    box-shadow:0 0 22px rgba(248,97,95,0.55);
+  }
+  .bin-marker{
+    position:absolute; transform:translate(-50%,-50%);
+    font-size:13px; opacity:.85;
+  }
+  .hotspot-dot{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+    background:var(--ewaste); transform:translate(-50%,-50%);
+    box-shadow:0 0 0 0 rgba(248,97,95,0.6);
+    opacity:0; transition:opacity .3s ease;
+  }
+  .hotspot-dot.show{
+    opacity:1; animation:hotspotPulse 1.4s ease-out infinite;
+  }
+  @keyframes hotspotPulse{
+    0%{ box-shadow:0 0 0 0 rgba(248,97,95,0.6);}
+    100%{ box-shadow:0 0 0 18px rgba(248,97,95,0);}
+  }
+  .scan-cone{
+    position:absolute; width:70px; height:70px; border-radius:50%;
+    transform:translate(-50%,-50%) scale(0.3);
+    background:radial-gradient(circle, rgba(56,189,248,0.35), rgba(56,189,248,0.05) 60%, transparent 75%);
+    opacity:0; transition:opacity .3s ease;
+    pointer-events:none;
+  }
+  .scan-cone.on{ opacity:1; animation:conePulse 1.2s ease-in-out infinite; }
+  @keyframes conePulse{
+    0%,100%{ transform:translate(-50%,-50%) scale(0.55); }
+    50%{ transform:translate(-50%,-50%) scale(1); }
+  }
+  .drone{
+    position:absolute; font-size:22px; transform:translate(-50%,-50%);
+    transition:left 1.1s cubic-bezier(.45,.05,.35,1), top 1.1s cubic-bezier(.45,.05,.35,1);
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+    z-index:3;
+  }
+  .drone.flying{ animation:droneBob 0.6s ease-in-out infinite; }
+  @keyframes droneBob{ 0%,100%{ margin-top:0px; } 50%{ margin-top:-4px; } }
+
+  .drone-readout{ margin-top:14px; }
+  .stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px;}
+  @media (max-width:640px){ .stat-grid{ grid-template-columns:repeat(2,1fr);} }
+  .stat-box{
+    background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:10px; padding:9px 10px;
+  }
+  .stat-box .k{ font-family:var(--mono); font-size:9px; color:var(--text-dimmer); letter-spacing:1px;}
+  .stat-box .v{ font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:700; margin-top:3px;}
+
+  .detect-card{
+    margin-top:10px; background:rgba(248,97,95,0.06); border:1px solid rgba(248,97,95,0.3);
+    border-radius:12px; padding:12px 14px; display:none;
+  }
+  .detect-card.show{ display:block; }
+  .detect-card h4{ font-family:var(--mono); font-size:10px; letter-spacing:1.5px; color:var(--ewaste); margin-bottom:6px;}
+  .detect-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:2px 0; font-family:var(--mono); color:var(--text-dim);}
+  .detect-row b{ color:var(--text); }
+
+  /* ---------- Unified dashboard ---------- */
+  .kpi-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+  @media (max-width:980px){ .kpi-grid{ grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:520px){ .kpi-grid{ grid-template-columns:repeat(2,1fr);} }
+  .kpi{
+    background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:12px;
+    padding:14px; text-align:center; transition:transform .2s ease, border-color .3s ease;
+  }
+  .kpi:hover{ transform:translateY(-2px); border-color:rgba(61,255,168,0.4); }
+  .kpi .num{ font-family:var(--mono); font-size:26px; font-weight:800; }
+  .kpi .lbl{ font-family:var(--mono); font-size:9.5px; color:var(--text-dimmer); letter-spacing:1px; margin-top:5px;}
+
+  /* ---------- System connection ---------- */
+  .flow-row{
+    display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:11.5px; color:var(--text-dim); text-align:center;
+  }
+  .flow-node{
+    background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:12px;
+    padding:12px 16px; min-width:120px;
+  }
+  .flow-node .fi{ font-size:22px; display:block; margin-bottom:4px; }
+  .flow-node.center{ border-color:rgba(61,255,168,0.45); background:rgba(61,255,168,0.06); color:var(--accent); font-weight:700; }
+  .flow-arrow{ color:var(--text-dimmer); font-size:18px; }
+
+  /* ---------- Full demo bar ---------- */
+  .demo-bar{
+    margin-top:20px; display:flex; align-items:center; justify-content:center; gap:14px;
+    flex-wrap:wrap;
+  }
+  .demo-bar button{ padding:14px 26px; font-size:14.5px; }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed; top:18px; left:50%; transform:translateX(-50%) translateY(-140%);
+    background:rgba(6,20,14,0.95); border:1px solid rgba(61,255,168,0.5);
+    color:var(--accent); font-family:var(--mono); font-size:12.5px; letter-spacing:.5px;
+    padding:12px 22px; border-radius:12px; z-index:50;
+    box-shadow:0 20px 40px -14px rgba(0,0,0,0.7);
+    transition:transform .4s cubic-bezier(.3,1.4,.4,1);
+    white-space:nowrap;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  .footer-note{
+    text-align:center; margin-top:26px; font-family:var(--mono); font-size:10.5px; color:var(--text-dimmer);
+    letter-spacing:.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="header">
+    <div class="brand">
+      <span class="brand-icon">♻️</span>
+      <div>
+        <h1>WASTEWISE AI</h1>
+        <p>SMART WASTE INTELLIGENCE PLATFORM</p>
+      </div>
+    </div>
+    <div class="sys-status"><span class="status-dot"></span> SYSTEM ONLINE</div>
+  </header>
+
+  <div class="dash-grid">
+
+    <!-- ============ SMART BIN PANEL ============ -->
+    <section class="panel" id="binPanel">
+      <div class="panel-title">
+        <h2>♻️ Smart AI Waste Segregation Bin</h2>
+        <span class="sub">CAM + AI CLASSIFIER + SERVO ROUTER</span>
+      </div>
+
+      <div class="process-bar" id="binProcessBar"></div>
+
+      <div class="bin-stage">
+        <div class="svg-frame">
+          <svg id="binSvg" viewBox="0 0 600 690" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gradWet" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1c8a45"/><stop offset="100%" stop-color="var(--wet)"/>
+              </linearGradient>
+              <linearGradient id="gradDry" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1a72a3"/><stop offset="100%" stop-color="var(--dry)"/>
+              </linearGradient>
+              <linearGradient id="gradRecycle" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#a3780f"/><stop offset="100%" stop-color="var(--recycle)"/>
+              </linearGradient>
+              <linearGradient id="gradEwaste" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9c2c2a"/><stop offset="100%" stop-color="var(--ewaste)"/>
+              </linearGradient>
+            </defs>
+
+            <!-- housing -->
+            <rect x="14" y="8" width="572" height="674" rx="20" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.08)"/>
+
+            <!-- inlet -->
+            <text x="300" y="34" text-anchor="middle" class="inlet-label">DROP WASTE HERE ▾</text>
+            <rect x="255" y="40" width="90" height="16" rx="8" fill="rgba(61,255,168,0.08)" stroke="rgba(61,255,168,0.4)"/>
+
+            <!-- entry pipe (decorative) -->
+            <path d="M300,56 L300,255" stroke="rgba(255,255,255,0.09)" stroke-width="30" stroke-linecap="round" fill="none"/>
+            <path id="pathEntry1" d="M300,60 L300,150" stroke="none" fill="none"/>
+            <path id="pathEntry2" d="M300,150 L300,255" stroke="none" fill="none"/>
+
+            <!-- camera -->
+            <g transform="translate(300,105)">
+              <circle r="18" fill="rgba(0,0,0,0.4)" stroke="var(--glass-border)"/>
+              <text x="0" y="7" text-anchor="middle" font-size="18">📷</text>
+              <text x="34" y="5" class="cam-label">CAMERA</text>
+            </g>
+            <!-- scan zone -->
+            <rect x="262" y="70" width="76" height="90" rx="10" class="scan-zone-bg"/>
+            <rect id="scanLine" class="scan-line" x="262" y="70" width="76" height="3" fill="var(--accent)"/>
+
+            <!-- junction -->
+            <circle id="junctionRing" class="junction-ring" cx="300" cy="255" r="26" fill="rgba(0,0,0,0.35)" stroke="var(--glass-border)" stroke-width="2"/>
+            <text x="300" y="248" text-anchor="middle" font-size="13">⚙️</text>
+            <text x="300" y="262" text-anchor="middle" font-size="7.5" class="cam-label">JUNCTION</text>
+
+            <!-- deflector -->
+            <g id="deflector" class="deflector">
+              <line x1="300" y1="255" x2="300" y2="225" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>
+            </g>
+
+            <!-- routes (also used as motion paths) -->
+            <path id="route-wet" class="route-pipe" d="M300,255 C300,335 90,345 90,590" stroke="url(#gradWet)" stroke-width="42" stroke-linecap="round" fill="none" opacity="0.5" style="color:var(--wet)"/>
+            <path d="M300,255 C300,335 90,345 90,590" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+            <path id="route-dry" class="route-pipe" d="M300,255 C300,320 230,360 230,590" stroke="url(#gradDry)" stroke-width="42" stroke-linecap="round" fill="none" opacity="0.5" style="color:var(--dry)"/>
+            <path d="M300,255 C300,320 230,360 230,590" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+            <path id="route-recycle" class="route-pipe" d="M300,255 C300,320 370,360 370,590" stroke="url(#gradRecycle)" stroke-width="42" stroke-linecap="round" fill="none" opacity="0.5" style="color:var(--recycle)"/>
+            <path d="M300,255 C300,320 370,360 370,590" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+            <path id="route-ewaste" class="route-pipe" d="M300,255 C300,335 510,345 510,590" stroke="url(#gradEwaste)" stroke-width="42" stroke-linecap="round" fill="none" opacity="0.5" style="color:var(--ewaste)"/>
+            <path d="M300,255 C300,335 510,345 510,590" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+            <!-- route labels + arrows -->
+            <text x="90" y="470" text-anchor="middle" class="route-label" fill="var(--wet)">WET</text>
+            <text x="230" y="500" text-anchor="middle" class="route-label" fill="var(--dry)">DRY</text>
+            <text x="370" y="500" text-anchor="middle" class="route-label" fill="var(--recycle)">RECYCLE</text>
+            <text x="510" y="470" text-anchor="middle" class="route-label" fill="var(--ewaste)">E-WASTE</text>
+            <text x="90" y="490" text-anchor="middle" class="route-arrow" font-size="13" fill="var(--wet)">▾</text>
+            <text x="230" y="520" text-anchor="middle" class="route-arrow" font-size="13" fill="var(--dry)">▾</text>
+            <text x="370" y="520" text-anchor="middle" class="route-arrow" font-size="13" fill="var(--recycle)">▾</text>
+            <text x="510" y="490" text-anchor="middle" class="route-arrow" font-size="13" fill="var(--ewaste)">▾</text>
+
+            <!-- compartments -->
+            <g id="compWet">
+              <rect x="42" y="590" width="96" height="76" rx="12" fill="rgba(47,214,107,0.08)" stroke="var(--wet)" stroke-width="1.5"/>
+              <text x="90" y="628" text-anchor="middle" class="compartment-icon">🟢</text>
+              <text x="90" y="652" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--wet)" id="wetCountLbl">0 items</text>
+            </g>
+            <g id="compDry">
+              <rect x="182" y="590" width="96" height="76" rx="12" fill="rgba(56,189,248,0.08)" stroke="var(--dry)" stroke-width="1.5"/>
+              <text x="230" y="628" text-anchor="middle" class="compartment-icon">🔵</text>
+              <text x="230" y="652" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--dry)" id="dryCountLbl">0 items</text>
+            </g>
+            <g id="compRecycle">
+              <rect x="322" y="590" width="96" height="76" rx="12" fill="rgba(251,191,36,0.08)" stroke="var(--recycle)" stroke-width="1.5"/>
+              <text x="370" y="628" text-anchor="middle" class="compartment-icon">🟡</text>
+              <text x="370" y="652" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--recycle)" id="recycleCountLbl">0 items</text>
+            </g>
+            <g id="compEwaste">
+              <rect x="462" y="590" width="96" height="76" rx="12" fill="rgba(248,97,95,0.08)" stroke="var(--ewaste)" stroke-width="1.5"/>
+              <text x="510" y="628" text-anchor="middle" class="compartment-icon">🔴</text>
+              <text x="510" y="652" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--ewaste)" id="ewasteCountLbl">0 items</text>
+            </g>
+
+            <!-- status flash -->
+            <text id="binStatusFlash" class="status-flash" x="300" y="675" text-anchor="middle"></text>
+
+            <!-- waste token (topmost) -->
+            <g id="wasteToken" class="waste-token" transform="translate(300,60)">
+              <circle r="17"/>
+              <text id="wasteTokenEmoji" x="0" y="1">🍌</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="readout">
+          <div class="card-mini" id="camCard">
+            <h4>📷 CAMERA</h4>
+            <div class="idle-text" id="camText">Standing by — awaiting waste item…</div>
+          </div>
+          <div class="card-mini" id="aiCard">
+            <h4>🧠 AI CLASSIFICATION</h4>
+            <div class="idle-text" id="aiText">No object scanned yet.</div>
+            <div class="conf-bar-track"><div class="conf-bar-fill" id="confBar"></div></div>
+          </div>
+          <div class="card-mini" id="servoCard">
+            <h4>⚙️ ROUTING MECHANISM</h4>
+            <div class="idle-text" id="servoText">Deflector centered — idle.</div>
+          </div>
+          <div class="card-mini">
+            <h4>📊 BIN LEVELS</h4>
+            <div class="levels">
+              <div class="level-item"><div class="lbl"><span>WET</span><span id="wetPct">0%</span></div><div class="level-track"><div class="level-fill" id="wetFill" style="width:0%; background:var(--wet);"></div></div></div>
+              <div class="level-item"><div class="lbl"><span>DRY</span><span id="dryPct">0%</span></div><div class="level-track"><div class="level-fill" id="dryFill" style="width:0%; background:var(--dry);"></div></div></div>
+              <div class="level-item"><div class="lbl"><span>RECYCLE</span><span id="recyclePct">0%</span></div><div class="level-track"><div class="level-fill" id="recycleFill" style="width:0%; background:var(--recycle);"></div></div></div>
+              <div class="level-item"><div class="lbl"><span>E-WASTE</span><span id="ewastePct">0%</span></div><div class="level-track"><div class="level-fill" id="ewasteFill" style="width:0%; background:var(--ewaste);"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button data-waste="banana">🍌 Banana Peel</button>
+        <button data-waste="plastic">🧴 Plastic Bottle</button>
+        <button data-waste="paper">📄 Paper</button>
+        <button data-waste="battery">🔋 Battery</button>
+        <button class="reset-btn" id="binResetBtn">↺ Reset</button>
+      </div>
+    </section>
+
+    <!-- ============ DRONE PANEL ============ -->
+    <section class="panel" id="dronePanel">
+      <div class="panel-title">
+        <h2>🚁 AI Drone Waste Inspection</h2>
+        <span class="sub">AERIAL SCAN + HOTSPOT DETECTION</span>
+      </div>
+
+      <div class="process-bar" id="droneProcessBar"></div>
+
+      <div class="map-frame">
+        <div class="map-inner" id="mapInner">
+          <div class="road" style="left:0; top:48%; width:100%; height:3px;"></div>
+          <div class="road" style="left:24%; top:0; width:3px; height:100%;"></div>
+          <div class="road" style="left:65%; top:0; width:3px; height:100%;"></div>
+          <div class="green-area" style="left:6%; top:78%; width:110px; height:110px;"></div>
+          <div class="green-area" style="left:92%; top:14%; width:120px; height:120px;"></div>
+
+          <div class="building" id="blockA" style="left:25%; top:20%;"><span class="bicon">🏢</span>BLOCK A</div>
+          <div class="building" id="blockB" style="left:45%; top:72%;"><span class="bicon">🏢</span>BLOCK B</div>
+          <div class="building" id="blockC" style="left:66%; top:24%;"><span class="bicon">🏢</span>BLOCK C</div>
+          <div class="building" id="blockD" style="left:86%; top:58%;"><span class="bicon">🏢</span>BLOCK D</div>
+
+          <div class="bin-marker" style="left:25%; top:32%;">🗑️</div>
+          <div class="bin-marker" style="left:66%; top:36%;">🗑️</div>
+
+          <div class="hotspot-dot" id="hotspotA" style="left:25%; top:20%;"></div>
+          <div class="hotspot-dot" id="hotspotC" style="left:66%; top:24%;"></div>
+
+          <div class="scan-cone" id="scanCone" style="left:8%; top:55%;"></div>
+          <div class="drone" id="droneIcon" style="left:8%; top:55%;">🚁</div>
+        </div>
+      </div>
+
+      <div class="detect-card" id="detectCard">
+        <h4>🧠 AI DETECTION — WASTE HOTSPOT DETECTED</h4>
+        <div class="detect-row"><span>Type</span><b id="detType">—</b></div>
+        <div class="detect-row"><span>Confidence</span><b id="detConf">—</b></div>
+        <div class="detect-row"><span>Location</span><b id="detLoc">—</b></div>
+        <div class="detect-row"><span>Severity</span><b id="detSeverity">—</b></div>
+      </div>
+
+      <div class="drone-readout">
+        <div class="stat-grid">
+          <div class="stat-box"><div class="k">STATUS</div><div class="v" id="dStatus">IDLE</div></div>
+          <div class="stat-box"><div class="k">ALTITUDE</div><div class="v" id="dAlt">0 m</div></div>
+          <div class="stat-box"><div class="k">BATTERY</div><div class="v" id="dBatt">100%</div></div>
+          <div class="stat-box"><div class="k">GPS</div><div class="v" id="dGps">UNLOCKED</div></div>
+          <div class="stat-box"><div class="k">AI CONF.</div><div class="v" id="dConf">—</div></div>
+          <div class="stat-box"><div class="k">HOTSPOTS</div><div class="v" id="dHotspots">0</div></div>
+        </div>
+        <div class="card-mini" style="margin-top:10px;">
+          <h4>INSPECTION STATUS</h4>
+          <div class="idle-text" id="dInspection">Not started.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="droneStartBtn">🚁 Start Inspection</button>
+        <button id="droneScanBtn">📷 Scan Hotspot</button>
+        <button class="reset-btn" id="droneResetBtn">↺ Reset Drone</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ UNIFIED DASHBOARD ============ -->
+  <section class="panel">
+    <div class="panel-title">
+      <h2>📊 Unified WasteWise Dashboard</h2>
+      <span class="sub">LIVE SYSTEM METRICS</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="num" id="kpiTotal" style="color:var(--accent);">0</div><div class="lbl">TOTAL WASTE</div></div>
+      <div class="kpi"><div class="num" id="kpiWet" style="color:var(--wet);">0</div><div class="lbl">WET WASTE</div></div>
+      <div class="kpi"><div class="num" id="kpiDry" style="color:var(--dry);">0</div><div class="lbl">DRY WASTE</div></div>
+      <div class="kpi"><div class="num" id="kpiRecycle" style="color:var(--recycle);">0</div><div class="lbl">RECYCLABLE</div></div>
+      <div class="kpi"><div class="num" id="kpiEwaste" style="color:var(--ewaste);">0</div><div class="lbl">E-WASTE</div></div>
+      <div class="kpi"><div class="num" id="kpiHotspots" style="color:#fca5a5;">0</div><div class="lbl">DRONE HOTSPOTS</div></div>
+    </div>
+  </section>
+
+  <!-- ============ SYSTEM CONNECTION ============ -->
+  <section class="panel">
+    <div class="panel-title">
+      <h2>🔗 System Connection</h2>
+      <span class="sub">ONE UNIFIED WASTEWISE SYSTEM</span>
+    </div>
+    <div class="flow-row">
+      <div class="flow-node"><span class="fi">🚁</span>DRONE</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node"><span class="fi">🧠</span>AI WASTE<br>DETECTION</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node center"><span class="fi">☁️</span>WASTEWISE<br>CONTROL CENTER</div>
+      <span class="flow-arrow">←</span>
+      <div class="flow-node"><span class="fi">📡</span>SMART BIN<br>DATA</div>
+      <span class="flow-arrow">←</span>
+      <div class="flow-node"><span class="fi">♻️</span>SMART BIN</div>
+    </div>
+  </section>
+
+  <div class="demo-bar">
+    <button class="primary-btn" id="fullDemoBtn">▶ Run Full Demo</button>
+  </div>
+
+  <p class="footer-note">This is a conceptual frontend simulation for a Techverse project — no backend, database, or internet connection required.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     DATA
+  ============================================================ */
+  const WASTE_DB = {
+    banana:  { emoji:'🍌', name:'Banana Peel',    category:'WET WASTE',    confidence:96.2, route:'wet' },
+    plastic: { emoji:'🧴', name:'Plastic Bottle',  category:'RECYCLABLE',   confidence:94.7, route:'recycle' },
+    paper:   { emoji:'📄', name:'Paper',           category:'DRY WASTE',    confidence:92.8, route:'dry' },
+    battery: { emoji:'🔋', name:'Battery',         category:'E-WASTE',      confidence:98.1, route:'ewaste' }
+  };
+
+  const ROUTE_META = {
+    wet:     { color:'var(--wet)',     angle:-58, countLbl:'wetCountLbl',     fill:'wetFill',     pct:'wetPct',     card:'compWet' },
+    dry:     { color:'var(--dry)',     angle:-19, countLbl:'dryCountLbl',     fill:'dryFill',     pct:'dryPct',     card:'compDry' },
+    recycle: { color:'var(--recycle)', angle:19,  countLbl:'recycleCountLbl',fill:'recycleFill', pct:'recyclePct', card:'compRecycle' },
+    ewaste:  { color:'var(--ewaste)',  angle:58,  countLbl:'ewasteCountLbl', fill:'ewasteFill',  pct:'ewastePct',  card:'compEwaste' }
+  };
+
+  const BIN_STEPS = ['DROP','CAMERA','AI','ROUTE','SERVO','SORTED'];
+  const DRONE_STEPS = ['TAKE OFF','SCAN','AI DETECT','GPS LOCATE','ALERT'];
+
+  const WAYPOINTS = [
+    { id:'start',  label:'START',   x:8,  y:55, block:null },
+    { id:'blockA', label:'BLOCK A', x:25, y:20, block:'blockA', hotspot:{type:'Plastic litter',      confidence:91.4, severity:'HIGH'} },
+    { id:'blockB', label:'BLOCK B', x:45, y:72, block:'blockB', hotspot:null },
+    { id:'blockC', label:'BLOCK C', x:66, y:24, block:'blockC', hotspot:{type:'Overflowing waste bin',confidence:88.6, severity:'MEDIUM'} },
+    { id:'blockD', label:'BLOCK D', x:86, y:58, block:'blockD', hotspot:null }
+  ];
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  const counts = { wet:0, dry:0, recycle:0, ewaste:0 };
+  let droneHotspotCount = 0;
+  let droneWaypointIndex = 0;
+  let droneBattery = 100;
+  let binBusy = false;
+  let droneBusy = false;
+
+  /* ============================================================
+     DOM
+  ============================================================ */
+  const $ = id => document.getElementById(id);
+  const toastEl = $('toast');
+
+  /* ============================================================
+     UTILITIES
+  ============================================================ */
+  function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+  function showToast(msg, duration=2600){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.classList.remove('show'), duration);
+  }
+
+  // Consistent path-based motion: uses getTotalLength / getPointAtLength + rAF
+  function animateAlongPath(pathEl, tokenEl, duration){
+    return new Promise(resolve=>{
+      const total = pathEl.getTotalLength();
+      const start = performance.now();
+      function frame(now){
+        const t = Math.min((now-start)/duration, 1);
+        const pt = pathEl.getPointAtLength(t*total);
+        tokenEl.setAttribute('transform', `translate(${pt.x},${pt.y})`);
+        if(t < 1){
+          requestAnimationFrame(frame);
+        } else {
+          resolve();
+        }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function buildProcessBar(containerId, steps){
+    const c = $(containerId);
+    c.innerHTML = '';
+    steps.forEach((label, i)=>{
+      const step = document.createElement('span');
+      step.className = 'p-step';
+      step.id = containerId + '-step-' + i;
+      step.innerHTML = `<span class="num">${i+1}</span><span>${label}</span>`;
+      c.appendChild(step);
+      if(i < steps.length - 1){
+        const arrow = document.createElement('span');
+        arrow.className = 'p-arrow';
+        arrow.textContent = '→';
+        c.appendChild(arrow);
+      }
+    });
+  }
+
+  function setActiveStep(containerId, stepCount, activeIndex){
+    for(let i=0;i<stepCount;i++){
+      const el = $(containerId + '-step-' + i);
+      el.classList.remove('active','done');
+      if(i < activeIndex) el.classList.add('done');
+      else if(i === activeIndex) el.classList.add('active');
+    }
+  }
+
+  function clearSteps(containerId, stepCount){
+    for(let i=0;i<stepCount;i++){
+      $(containerId + '-step-' + i).classList.remove('active','done');
+    }
+  }
+
+  buildProcessBar('binProcessBar', BIN_STEPS);
+  buildProcessBar('droneProcessBar', DRONE_STEPS);
+
+  /* ============================================================
+     SMART BIN LOGIC
+  ============================================================ */
+  const binSvg      = $('binSvg');
+  const wasteToken   = $('wasteToken');
+  const wasteEmojiEl = $('wasteTokenEmoji');
+  const scanLine     = $('scanLine');
+  const junctionRing = $('junctionRing');
+  const deflector    = $('deflector');
+  const binStatusFlash = $('binStatusFlash');
+
+  const entryPath1 = $('pathEntry1');
+  const entryPath2 = $('pathEntry2');
+  const routeEls = {
+    wet: $('route-wet'), dry: $('route-dry'), recycle: $('route-recycle'), ewaste: $('route-ewaste')
+  };
+
+  function setBinStatus(msg){ binStatusFlash.textContent = msg; }
+
+  function updateBinLevels(){
+    ['wet','dry','recycle','ewaste'].forEach(k=>{
+      const meta = ROUTE_META[k];
+      const pct = Math.min(100, counts[k] * 12);
+      $(meta.fill).style.width = pct + '%';
+      $(meta.pct).textContent = pct + '%';
+      $(meta.countLbl).textContent = counts[k] + ' items';
+    });
+    updateUnifiedDashboard();
+  }
+
+  function updateUnifiedDashboard(){
+    const total = counts.wet + counts.dry + counts.recycle + counts.ewaste;
+    $('kpiTotal').textContent = total;
+    $('kpiWet').textContent = counts.wet;
+    $('kpiDry').textContent = counts.dry;
+    $('kpiRecycle').textContent = counts.recycle;
+    $('kpiEwaste').textContent = counts.ewaste;
+    $('kpiHotspots').textContent = droneHotspotCount;
+  }
+
+  async function runBinSequence(wasteKey){
+    if(binBusy) return;
+    binBusy = true;
+    setControlsEnabled(false);
+
+    const item = WASTE_DB[wasteKey];
+    const routeKey = item.route;
+    const routeMeta = ROUTE_META[routeKey];
+
+    // reset visuals
+    Object.values(routeEls).forEach(el=> el.classList.remove('active'));
+    junctionRing.classList.remove('active');
+    deflector.style.setProperty('--angle','0deg');
+    $('confBar').style.width = '0%';
+    $('camText').textContent = 'Standing by…';
+    $('aiText').textContent = 'No object scanned yet.';
+    $('servoText').textContent = 'Deflector centered — idle.';
+    setBinStatus('');
+
+    // STEP 1 — DROP
+    setActiveStep('binProcessBar', BIN_STEPS.length, 0);
+    wasteEmojiEl.textContent = item.emoji;
+    wasteToken.setAttribute('transform','translate(300,60)');
+    wasteToken.classList.add('show');
+    setBinStatus(`${item.emoji} ${item.name} dropped into inlet`);
+    await sleep(500);
+
+    // STEP 2 — CAMERA
+    setActiveStep('binProcessBar', BIN_STEPS.length, 1);
+    $('camText').textContent = '📷 CAMERA ACTIVE — scanning waste…';
+    scanLine.classList.add('on');
+    await animateAlongPath(entryPath1, wasteToken, 900);
+    await sleep(500);
+    scanLine.classList.remove('on');
+    $('camText').textContent = 'IMAGE CAPTURED ✓';
+    await sleep(350);
+
+    // STEP 3 — AI CLASSIFICATION
+    setActiveStep('binProcessBar', BIN_STEPS.length, 2);
+    $('aiText').innerHTML = `Object: <b>${item.name}</b><br>Category: <b>${item.category}</b><br>Confidence: <b>${item.confidence}%</b>`;
+    requestAnimationFrame(()=>{ $('confBar').style.width = item.confidence + '%'; });
+    await sleep(1000);
+
+    // STEP 4 — ROUTE SELECTION
+    setActiveStep('binProcessBar', BIN_STEPS.length, 3);
+    setBinStatus(`Selecting ${routeKey.toUpperCase()} route…`);
+    await sleep(450);
+
+    // STEP 5 — SERVO / DEFLECTOR
+    setActiveStep('binProcessBar', BIN_STEPS.length, 4);
+    $('servoText').innerHTML = `⚙️ Routing mechanism engaged<br>Target: <b>${routeKey.toUpperCase()} ROUTE</b>`;
+    junctionRing.classList.add('active');
+    deflector.style.setProperty('--angle', routeMeta.angle + 'deg');
+    routeEls[routeKey].classList.add('active');
+    // move waste down through AI zone into the junction while servo rotates
+    await Promise.all([
+      sleep(550),
+      animateAlongPath(entryPath2, wasteToken, 550)
+    ]);
+
+    // Travel along the physically selected chute
+    setBinStatus(`${routeKey.toUpperCase()} ROUTE ACTIVE — waste travelling`);
+    await animateAlongPath(routeEls[routeKey], wasteToken, 1500);
+
+    // STEP 6 — SORTED
+    setActiveStep('binProcessBar', BIN_STEPS.length, 5);
+    setBinStatus('✓ SORTED SUCCESSFULLY');
+    counts[routeKey] += 1;
+    updateBinLevels();
+    await sleep(500);
+    wasteToken.classList.remove('show');
+    junctionRing.classList.remove('active');
+    routeEls[routeKey].classList.remove('active');
+    deflector.style.setProperty('--angle','0deg');
+    await sleep(250);
+    setBinStatus('');
+
+    setControlsEnabled(true);
+    binBusy = false;
+  }
+
+  function resetBin(){
+    clearSteps('binProcessBar', BIN_STEPS.length);
+    wasteToken.classList.remove('show');
+    Object.values(routeEls).forEach(el=> el.classList.remove('active'));
+    junctionRing.classList.remove('active');
+    deflector.style.setProperty('--angle','0deg');
+    scanLine.classList.remove('on');
+    setBinStatus('');
+    $('camText').textContent = 'Standing by — awaiting waste item…';
+    $('aiText').textContent = 'No object scanned yet.';
+    $('confBar').style.width = '0%';
+    $('servoText').textContent = 'Deflector centered — idle.';
+    counts.wet = counts.dry = counts.recycle = counts.ewaste = 0;
+    updateBinLevels();
+  }
+
+  function setControlsEnabled(enabled){
+    document.querySelectorAll('#binPanel .controls button, #dronePanel .controls button, #fullDemoBtn')
+      .forEach(b => b.disabled = !enabled);
+  }
+
+  /* ============================================================
+     DRONE LOGIC
+  ============================================================ */
+  const droneIcon = $('droneIcon');
+  const scanCone = $('scanCone');
+  const detectCard = $('detectCard');
+
+  function moveDroneTo(wp){
+    droneIcon.style.left = wp.x + '%';
+    droneIcon.style.top = wp.y + '%';
+    scanCone.style.left = wp.x + '%';
+    scanCone.style.top = wp.y + '%';
+  }
+
+  function setHotspotMarker(blockId, visible){
+    const map = { blockA:'hotspotA', blockC:'hotspotC' };
+    const dotId = map[blockId];
+    if(!dotId) return;
+    $(dotId).classList.toggle('show', visible);
+    const buildingEl = $(blockId);
+    if(buildingEl) buildingEl.classList.toggle('hotspot-hit', visible);
+  }
+
+  async function droneVisitWaypoint(wp, stepBase){
+    // TAKE OFF / travel
+    setActiveStep('droneProcessBar', DRONE_STEPS.length, 0);
+    $('dStatus').textContent = 'ACTIVE';
+    $('dAlt').textContent = '12 m';
+    droneIcon.classList.add('flying');
+    moveDroneTo(wp);
+    await sleep(1150);
+
+    // SCAN
+    setActiveStep('droneProcessBar', DRONE_STEPS.length, 1);
+    $('dInspection').textContent = `Scanning ${wp.label}…`;
+    scanCone.classList.add('on');
+    await sleep(900);
+    scanCone.classList.remove('on');
+
+    // AI DETECT
+    setActiveStep('droneProcessBar', DRONE_STEPS.length, 2);
+    if(wp.hotspot){
+      $('detType').textContent = wp.hotspot.type;
+      $('detConf').textContent = wp.hotspot.confidence + '%';
+      $('detLoc').textContent = wp.label;
+      $('detSeverity').textContent = wp.hotspot.severity;
+      detectCard.classList.add('show');
+      $('dConf').textContent = wp.hotspot.confidence + '%';
+      setHotspotMarker(wp.block, true);
+      droneHotspotCount += 1;
+      $('dHotspots').textContent = droneHotspotCount;
+      updateUnifiedDashboard();
+    } else {
+      detectCard.classList.remove('show');
+      $('dInspection').textContent = `${wp.label}: no waste hotspot detected.`;
+    }
+    await sleep(700);
+
+    // GPS LOCATE
+    setActiveStep('droneProcessBar', DRONE_STEPS.length, 3);
+    $('dGps').textContent = 'LOCKED';
+    await sleep(500);
+
+    // ALERT
+    setActiveStep('droneProcessBar', DRONE_STEPS.length, 4);
+    if(wp.hotspot){
+      showToast(`⚠ HOTSPOT ALERT — ${wp.hotspot.type} at ${wp.label}`);
+      $('dInspection').textContent = `Alert sent for ${wp.label}.`;
+    }
+    droneBattery = Math.max(10, droneBattery - 4);
+    $('dBatt').textContent = droneBattery + '%';
+    await sleep(500);
+  }
+
+  async function runDroneInspection(){
+    if(droneBusy) return;
+    droneBusy = true;
+    setControlsEnabled(false);
+    $('dInspection').textContent = 'Inspection in progress…';
+    $('dStatus').textContent = 'ACTIVE';
+
+    for(let i=1;i<WAYPOINTS.length;i++){
+      await droneVisitWaypoint(WAYPOINTS[i]);
+    }
+
+    droneIcon.classList.remove('flying');
+    $('dStatus').textContent = 'COMPLETED';
+    $('dInspection').textContent = 'Full campus inspection completed.';
+    clearSteps('droneProcessBar', DRONE_STEPS.length);
+    $('droneProcessBar-step-4').classList.add('done');
+    for(let i=0;i<4;i++) $('droneProcessBar-step-'+i).classList.add('done');
+
+    setControlsEnabled(true);
+    droneBusy = false;
+  }
+
+  async function scanCurrentHotspot(){
+    if(droneBusy) return;
+    droneBusy = true;
+    setControlsEnabled(false);
+    const wp = WAYPOINTS[droneWaypointIndex] && WAYPOINTS[droneWaypointIndex].block
+      ? WAYPOINTS[droneWaypointIndex]
+      : WAYPOINTS[1]; // default Block A
+    droneIcon.classList.add('flying');
+    await droneVisitWaypoint(wp);
+    droneIcon.classList.remove('flying');
+    setControlsEnabled(true);
+    droneBusy = false;
+  }
+
+  function resetDrone(){
+    clearSteps('droneProcessBar', DRONE_STEPS.length);
+    moveDroneTo(WAYPOINTS[0]);
+    droneIcon.classList.remove('flying');
+    scanCone.classList.remove('on');
+    detectCard.classList.remove('show');
+    setHotspotMarker('blockA', false);
+    setHotspotMarker('blockC', false);
+    droneHotspotCount = 0;
+    droneBattery = 100;
+    droneWaypointIndex = 0;
+    $('dStatus').textContent = 'IDLE';
+    $('dAlt').textContent = '0 m';
+    $('dBatt').textContent = '100%';
+    $('dGps').textContent = 'UNLOCKED';
+    $('dConf').textContent = '—';
+    $('dHotspots').textContent = '0';
+    $('dInspection').textContent = 'Not started.';
+    updateUnifiedDashboard();
+  }
+
+  /* ============================================================
+     FULL DEMO
+  ============================================================ */
+  async function runFullDemo(){
+    if(binBusy || droneBusy) return;
+    setControlsEnabled(false);
+    resetDrone();
+    resetBin();
+    await sleep(300);
+
+    // runDroneInspection() and runBinSequence() manage their own busy flags —
+    // don't pre-set them here, or the internal guard clause aborts immediately.
+    await runDroneInspection();
+    setControlsEnabled(false); // runDroneInspection re-enables on exit; keep locked through the handoff
+    await sleep(600);
+    await runBinSequence('plastic');
+
+    showToast('✓ WASTEWISE OPERATION COMPLETED', 3200);
+    setControlsEnabled(true);
+  }
+
+  /* ============================================================
+     EVENTS
+  ============================================================ */
+  document.querySelectorAll('#binPanel [data-waste]').forEach(btn=>{
+    btn.addEventListener('click', ()=> runBinSequence(btn.dataset.waste));
+  });
+  $('binResetBtn').addEventListener('click', resetBin);
+  $('droneStartBtn').addEventListener('click', runDroneInspection);
+  $('droneScanBtn').addEventListener('click', scanCurrentHotspot);
+  $('droneResetBtn').addEventListener('click', resetDrone);
+  $('fullDemoBtn').addEventListener('click', runFullDemo);
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  resetBin();
+  resetDrone();
+})();
+</script>
+</body>
+</html>
